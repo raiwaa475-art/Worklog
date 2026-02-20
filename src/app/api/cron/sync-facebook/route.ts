@@ -48,9 +48,7 @@ export async function POST() {
            }
         } else if (insightsResponse.fallbackEngagement !== undefined) {
            // If standard insights fail or return empty, use basic engagement metrics (Likes/Comments/Shares)
-           // If there is basic engagement, assume reach is at least slightly higher to prevent 0% CVR errors
            newClicks = insightsResponse.fallbackEngagement;
-           if (newClicks > 0 && newReach === 0) newReach = newClicks * 10; 
         }
 
         // Only commit update if stats actually changed

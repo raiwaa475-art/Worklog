@@ -128,7 +128,6 @@ async function runAutoPost() {
                         if (engagedMetric?.values?.[0]?.value !== undefined) newClicks = engagedMetric.values[0].value;
                     } else if (insightsResponse.fallbackEngagement !== undefined) {
                         newClicks = insightsResponse.fallbackEngagement;
-                        if (newClicks > 0 && newReach === 0) newReach = newClicks * 10;
                     }
                     
                     if (newReach !== p.reach || newClicks !== p.clicks) {
