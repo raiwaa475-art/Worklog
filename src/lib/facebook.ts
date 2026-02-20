@@ -58,7 +58,7 @@ export const getPostInsights = async (postId: string, accessToken: string) => {
     try {
       const insightsRes = await axios.get(`${FB_GRAPH_URL}/${postId}/insights`, {
         params: {
-          metric: 'post_impressions_unique,post_engaged_users',
+          metric: 'post_impressions,post_engagements',
           access_token: accessToken,
         },
       });

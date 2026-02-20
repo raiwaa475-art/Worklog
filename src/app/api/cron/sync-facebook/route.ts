@@ -37,8 +37,8 @@ export async function POST() {
         let newClicks = post.clicks || 0;
 
         if (insightsData && Array.isArray(insightsData) && insightsData.length > 0) {
-           const reachMetric = insightsData.find((m: any) => m.name === 'post_impressions_unique');
-           const engagedMetric = insightsData.find((m: any) => m.name === 'post_engaged_users');
+           const reachMetric = insightsData.find((m: any) => m.name === 'post_impressions');
+           const engagedMetric = insightsData.find((m: any) => m.name === 'post_engagements');
 
            if (reachMetric?.values?.[0]?.value !== undefined) {
               newReach = reachMetric.values[0].value;
@@ -49,6 +49,11 @@ export async function POST() {
         } else if (insightsResponse.fallbackEngagement !== undefined) {
            // If standard insights fail or return empty, use basic engagement metrics (Likes/Comments/Shares)
            newClicks = insightsResponse.fallbackEngagement;
+        }
+
+        // Cleanup: If current reach is 60 (simulated), reset it to 0
+        if (post.reach === 60) {
+            newReach = 0;
         }
 
         // Only commit update if stats actually changed

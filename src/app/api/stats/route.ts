@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { NextResponse } from 'next/server';
 
-export const revalidate = 600; // Cache for 10 minutes (600 seconds)
+export const dynamic = 'force-dynamic'; // Always fetch fresh data
 
 export async function GET() {
   try {

@@ -14,25 +14,45 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No products found' }, { status: 404 });
     }
 
-    const dataForGemini = products.map((p: any) => ({
+    const month = new Intl.DateTimeFormat('th-TH', { month: 'long' }).format(new Date());
+    const productCount = body.productCount || 5;
+    const style = body.style || 'different';
+    const avoidRecent = body.avoidRecent !== false; // Default to true
+
+    // Fetch the last few posts to identify recently used items
+    const { data: recentPostsForFilter } = await supabase
+        .from('posts')
+        .select('caption, selected_items')
+        .order('created_at', { ascending: false })
+        .limit(10);
+        
+    const lastPostCaption = recentPostsForFilter?.[0]?.caption || '';
+    
+    // Get list of recently used product names
+    const recentlyUsedItems = new Set<string>();
+    recentPostsForFilter?.forEach(p => {
+        if (Array.isArray(p.selected_items)) {
+            p.selected_items.forEach((item: string) => recentlyUsedItems.add(item));
+        }
+    });
+
+    let filteredProducts = products;
+    if (avoidRecent && recentlyUsedItems.size > 0) {
+        // Filter out products that were used recently
+        filteredProducts = products.filter(p => !recentlyUsedItems.has(p.name));
+        
+        // If we filtered out too many, fallback to original list but maybe prioritize others?
+        // For simplicity, if we have enough left, keep it. If not, use original.
+        if (filteredProducts.length < productCount) {
+            filteredProducts = products;
+        }
+    }
+
+    const dataForGemini = filteredProducts.map((p: any) => ({
       name: p.name,
       price: p.price,
       sales: p.sales
     }));
-
-    const month = new Intl.DateTimeFormat('th-TH', { month: 'long' }).format(new Date());
-    const productCount = body.productCount || 5;
-    const style = body.style || 'different';
-
-    // Fetch the last post to provide context for style
-    const { data: lastPostData } = await supabase
-        .from('posts')
-        .select('caption')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-        
-    const lastPostCaption = lastPostData?.caption || '';
 
     const aiResult = await analyzeTrendAndGenerateCaption(
       JSON.stringify(dataForGemini), 

@@ -39,6 +39,7 @@ export default function Dashboard() {
   const [showSuccess, setShowSuccess] = React.useState(false);
   const [selectedCount, setSelectedCount] = React.useState(5);
   const [selectedStyle, setSelectedStyle] = React.useState('different'); // 'similar' or 'different'
+  const [avoidRecent, setAvoidRecent] = React.useState(true);
   const [statsData, setStatsData] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
 
@@ -69,7 +70,8 @@ export default function Dashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           productCount: selectedCount,
-          style: selectedStyle
+          style: selectedStyle,
+          avoidRecent: avoidRecent
         })
       });
       const resData = await response.json();
@@ -225,6 +227,21 @@ export default function Dashboard() {
                     <small>ฉีกแนวใหม่ๆ เพื่อความตื่นเต้น</small>
                   </button>
                 </div>
+              </div>
+
+              <div className="option-group">
+                <div className="flex-between">
+                  <label className="m-0">เลี่ยงสินค้าที่โพสต์ไปแล้วล่าสุด</label>
+                  <label className="switch">
+                    <input
+                      type="checkbox"
+                      checked={avoidRecent}
+                      onChange={() => setAvoidRecent(!avoidRecent)}
+                    />
+                    <span className="slider-switch"></span>
+                  </label>
+                </div>
+                <small className="text-dim block mt-1">AI จะเลือกสินค้าใหม่ๆ ที่ยังไม่ค่อยโดนโพสต์ในสัปดาห์นี้</small>
               </div>
             </div>
 

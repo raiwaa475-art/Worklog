@@ -31,18 +31,46 @@ async function runAutoPost() {
     const month = new Intl.DateTimeFormat('th-TH', { month: 'long' }).format(new Date());
     const productCount = 5; // Default for auto-post
     const style = 'different';
+    const avoidRecent = true; // Auto-post should always try to avoid repetition
 
     console.log("🧠 Fetching generated info from Gemini...");
 
-    // Fetch the last post to provide context for style
-    const { data: lastPostData } = await supabase
+    // Fetch the last few posts to identify recently used items
+    const { data: recentPostsForFilter } = await supabase
         .from('posts')
-        .select('caption')
+        .select('caption, selected_items')
         .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
+        .limit(10);
         
-    const lastPostCaption = lastPostData?.caption || '';
+    const lastPostCaption = recentPostsForFilter?.[0]?.caption || '';
+    
+    // Get list of recently used product names
+    const recentlyUsedItems = new Set<string>();
+    recentPostsForFilter?.forEach(p => {
+        if (Array.isArray(p.selected_items)) {
+            p.selected_items.forEach((item: string) => recentlyUsedItems.add(item));
+        }
+    });
+
+    let filteredProducts = products;
+    if (avoidRecent && recentlyUsedItems.size > 0) {
+        // Filter out products that were used recently
+        filteredProducts = products.filter(p => !recentlyUsedItems.has(p.name));
+        
+        // If we filtered out too many, fallback to original list
+        if (filteredProducts.length < productCount) {
+            console.log("⚠️ Too many products filtered, falling back to original list for variety.");
+            filteredProducts = products;
+        } else {
+            console.log(`✅ Filtered out ${products.length - filteredProducts.length} recently used products.`);
+        }
+    }
+
+    const dataForGemini = filteredProducts.map((p: any) => ({
+      name: p.name,
+      price: p.price,
+      sales: p.sales
+    }));
 
     const aiResult = await analyzeTrendAndGenerateCaption(
       JSON.stringify(dataForGemini), 
@@ -122,8 +150,8 @@ async function runAutoPost() {
                     let newClicks = p.clicks || 0;
                     
                     if (insightsData && Array.isArray(insightsData) && insightsData.length > 0) {
-                        const reachMetric = insightsData.find((m: any) => m.name === 'post_impressions_unique');
-                        const engagedMetric = insightsData.find((m: any) => m.name === 'post_engaged_users');
+                        const reachMetric = insightsData.find((m: any) => m.name === 'post_impressions');
+                        const engagedMetric = insightsData.find((m: any) => m.name === 'post_engagements');
                         if (reachMetric?.values?.[0]?.value !== undefined) newReach = reachMetric.values[0].value;
                         if (engagedMetric?.values?.[0]?.value !== undefined) newClicks = engagedMetric.values[0].value;
                     } else if (insightsResponse.fallbackEngagement !== undefined) {
