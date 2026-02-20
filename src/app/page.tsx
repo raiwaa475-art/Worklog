@@ -113,19 +113,20 @@ export default function Dashboard() {
   };
 
   const chartData = React.useMemo(() => {
-    if (!statsData?.recentPosts) return [];
+    if (!statsData?.calendarData) return [];
 
-    // Generate a simple trend based on current reach/clicks to avoid empty chart
-    // In a real app, this would come from a history API
-    const days = ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์', 'อาทิตย์'];
-    const totalReach = parseInt(statsData?.stats?.totalReach?.toString()?.replace(/,/g, '') || '0');
-    const totalClicks = parseInt(statsData?.stats?.totalClicks?.toString()?.replace(/,/g, '') || '0');
+    // Get last 7 days
+    const last7Days = statsData.calendarData.slice(-7);
+    const dayNames = ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'];
 
-    return days.map((day) => ({
-      name: day,
-      reach: 0,
-      clicks: 0
-    }));
+    return last7Days.map((d: any) => {
+      const date = new Date(d.date);
+      return {
+        name: dayNames[date.getDay()],
+        reach: d.reach || 0,
+        clicks: d.clicks || 0
+      };
+    });
   }, [statsData]);
 
   return (

@@ -17,9 +17,9 @@ export default function HistoryPage() {
     useEffect(() => {
         const fetchHistory = async () => {
             try {
-                const response = await fetch('/api/stats');
+                const response = await fetch('/api/history');
                 const data = await response.json();
-                setPosts(data.recentPosts || []);
+                setPosts(Array.isArray(data) ? data : []);
             } catch (error) {
                 console.error('Failed to fetch history:', error);
             } finally {

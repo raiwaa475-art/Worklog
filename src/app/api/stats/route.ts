@@ -17,7 +17,7 @@ export async function GET() {
     let totalClicks = 0;
     
     // Aggregate posts by day for the calendar
-    const dailyStats: Record<string, { posts: number; reach: number }> = {};
+    const dailyStats: Record<string, { posts: number; reach: number; clicks: number }> = {};
     const last30Days = Array.from({ length: 30 }, (_, i) => {
         const d = new Date();
         d.setDate(d.getDate() - i);
@@ -25,7 +25,7 @@ export async function GET() {
     }).reverse();
 
     last30Days.forEach(day => {
-        dailyStats[day] = { posts: 0, reach: 0 };
+        dailyStats[day] = { posts: 0, reach: 0, clicks: 0 };
     });
 
     const itemFreq: Record<string, number> = {};
@@ -39,6 +39,7 @@ export async function GET() {
             const reach = post.reach || 0;
             const clicks = post.clicks || 0;
             dailyStats[dayKey].reach += reach;
+            dailyStats[dayKey].clicks += clicks;
             totalReach += reach;
             totalClicks += clicks;
         }
