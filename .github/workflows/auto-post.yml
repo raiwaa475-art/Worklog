@@ -1,0 +1,36 @@
+name: Auto Post to Facebook Daily
+on:
+  schedule:
+    # ตั้งเวลาโพสต์ (เวลา UTC)
+    # 01:00, 02:00, 03:00 UTC = 08:00, 09:00, 10:00 ตามเวลาประเทศไทย (ICT) ทุกวัน
+    - cron: "0 1,2,3 * * *"
+
+  # เพิ่มปุ่มกดรันเองได้ในหน้า GitHub Actions (Manual Trigger)
+  workflow_dispatch:
+
+jobs:
+  run-auto-post:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Auto Post Script
+        run: npx tsx scripts/auto-post.ts
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+          FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
