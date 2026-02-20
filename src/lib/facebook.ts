@@ -72,7 +72,7 @@ export const getPostInsights = async (postId: string, accessToken: string) => {
     try {
        const fallbackRes = await axios.get(`${FB_GRAPH_URL}/${postId}`, {
          params: {
-           fields: 'reactions.summary(total_count),comments.summary(total_count),shares',
+           fields: 'reactions.summary(total_count),comments.summary(total_count),shares,insights.metric(post_impressions,post_engagements)',
            access_token: accessToken,
          },
        });
@@ -81,6 +81,19 @@ export const getPostInsights = async (postId: string, accessToken: string) => {
        const totalComments = fallbackRes.data.comments?.summary?.total_count || 0;
        const totalShares = fallbackRes.data.shares?.count || 0;
        fallbackEngagement = totalReactions + totalComments + totalShares;
+
+       // Extra: if we got insights data in the same call
+       if (fallbackRes.data.insights?.data) {
+           const nested = fallbackRes.data.insights.data;
+           const imp = nested.find((m: any) => m.name === 'post_impressions');
+           const eng = nested.find((m: any) => m.name === 'post_engagements');
+           
+           // If we didn't get this from the first call, use these
+           if (insightsData.length === 0) {
+               if (imp) insightsData.push(imp);
+               if (eng) insightsData.push(eng);
+           }
+       }
     } catch (fallbackErr: any) {
        console.warn(`[FB Fallback] Failed to fetch fallback engagement for ${postId}`);
     }

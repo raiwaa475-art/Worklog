@@ -32,9 +32,9 @@ export async function POST() {
         const insightsResponse = await getPostInsights(post.fb_post_id, accessToken);
         const insightsData = insightsResponse.data;
         
-        // Default to current values just in case
-        let newReach = post.reach || 0;
-        let newClicks = post.clicks || 0;
+        // Reset to 0 to wipe any old simulated data
+        let newReach = 0;
+        let newClicks = 0;
 
         if (insightsData && Array.isArray(insightsData) && insightsData.length > 0) {
            const reachMetric = insightsData.find((m: any) => m.name === 'post_impressions');
@@ -49,11 +49,6 @@ export async function POST() {
         } else if (insightsResponse.fallbackEngagement !== undefined) {
            // If standard insights fail or return empty, use basic engagement metrics (Likes/Comments/Shares)
            newClicks = insightsResponse.fallbackEngagement;
-        }
-
-        // Cleanup: If current reach is 60 (simulated), reset it to 0
-        if (post.reach === 60) {
-            newReach = 0;
         }
 
         // Only commit update if stats actually changed
