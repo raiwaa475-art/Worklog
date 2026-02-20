@@ -26,6 +26,10 @@ export default function ProductsPage() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isImporting, setIsImporting] = useState(false);
 
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
     // Modal states
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<any>(null);
@@ -194,6 +198,17 @@ export default function ProductsPage() {
             return true;
         });
 
+    // Reset pagination when search or filter changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, viewMode]);
+
+    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+    const paginatedProducts = filteredProducts.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
     return (
         <div className="products-page animate-fade-in">
             <header className="page-header">
@@ -293,7 +308,7 @@ export default function ProductsPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredProducts.map((product: any) => (
+                            {paginatedProducts.map((product: any) => (
                                 <tr key={product.id}>
                                     <td>
                                         <div className="product-info-cell">
@@ -323,6 +338,26 @@ export default function ProductsPage() {
                             ))}
                         </tbody>
                     </table>
+                )}
+
+                {filteredProducts.length > itemsPerPage && !loading && (
+                    <div className="pagination">
+                        <button
+                            className="page-btn glass"
+                            disabled={currentPage === 1}
+                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        >
+                            ก่อนหน้า
+                        </button>
+                        <span className="page-info">หน้าที่ {currentPage} จาก {totalPages}</span>
+                        <button
+                            className="page-btn glass"
+                            disabled={currentPage === totalPages}
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        >
+                            ถัดไป
+                        </button>
+                    </div>
                 )}
             </div>
 
@@ -528,6 +563,39 @@ export default function ProductsPage() {
           display: flex;
           align-items: center;
           gap: 18px;
+        }
+
+        .pagination {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding: 24px;
+          gap: 20px;
+          border-top: 1px solid var(--card-border);
+        }
+
+        .page-btn {
+          padding: 10px 20px;
+          border-radius: var(--radius-md);
+          color: white;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .page-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .page-btn:not(:disabled):hover {
+          background: var(--primary);
+        }
+
+        .page-info {
+          color: var(--text-dim);
+          font-size: 0.9rem;
+          font-weight: 500;
         }
 
         .product-icon {

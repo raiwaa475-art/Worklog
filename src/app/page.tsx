@@ -274,25 +274,27 @@ export default function Dashboard() {
         <div className="ai-overlay">
           <div className="ai-loader-content">
             <div className="brain-container">
-              <BrainCircuit size={60} className="ai-brain-icon" />
-              <svg className="progress-3d-ring" viewBox="0 0 100 100">
+              <svg className="ai-brain-icon animate-pulse" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style={{ width: '80px', height: '80px', margin: 'auto' }}>
                 <defs>
-                  <linearGradient id="grad3loader" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="var(--primary)" />
-                    <stop offset="100%" stopColor="var(--accent)" />
+                  <linearGradient id="neonGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#818cf8" />
+                    <stop offset="100%" stopColor="#c084fc" />
                   </linearGradient>
-                  <filter id="glow3loader">
-                    <feGaussianBlur stdDeviation="2" result="blur" />
+                  <filter id="blurGlow">
+                    <feGaussianBlur stdDeviation="4" result="blur" />
                     <feComposite in="SourceGraphic" in2="blur" operator="over" />
                   </filter>
                 </defs>
-                <circle cx="50" cy="50" r="45" className="bg" />
-                <circle cx="50" cy="50" r="45" className="bar spin-loader" />
+                <circle cx="100" cy="100" r="80" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="2" />
+                <circle cx="100" cy="100" r="60" fill="none" stroke="url(#neonGlow)" strokeWidth="4" strokeDasharray="30 20" className="spin-loader" />
+                <path d="M70,100 L95,120 L135,70" fill="none" stroke="white" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" opacity="0.8" />
+                <circle cx="100" cy="100" r="95" fill="none" stroke="url(#neonGlow)" strokeWidth="1" opacity="0.4" filter="url(#blurGlow)" />
+                <line x1="100" y1="0" x2="100" y2="200" stroke="rgba(255,255,255,0.1)" strokeWidth="1" strokeDasharray="5 5" className="spin-loader-fast" />
               </svg>
             </div>
             <div className="ai-status text-center">
-              <h2 className="gradient-text animate-pulse mb-4 text-3xl font-bold tracking-wide">Genie AI Engine</h2>
-              <p className="loading-text-sub max-w-md mx-auto">ระบบกำลังวิเคราะห์ 3D Data Model และดึงข้อมูลมิติใหม่เพื่อหาตำแหน่งโพสต์ที่ดีที่สุด...</p>
+              <h2 className="gradient-text animate-pulse mb-4 text-3xl font-bold tracking-wide">Genie AI Synapse Active</h2>
+              <p className="loading-text-sub max-w-md mx-auto">กำลังสแกน Quantum Data Matrix และเจาะลึก Consumer Insight เชิงพฤติกรรม เพื่อสังเคราะห์คอนเทนต์ที่อิมแพคที่สุด...</p>
             </div>
           </div>
         </div>

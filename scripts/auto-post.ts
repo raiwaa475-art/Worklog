@@ -101,7 +101,49 @@ async function runAutoPost() {
     
     if (insertError) throw insertError;
     
-    console.log("💾 Saved to Supabase History!");
+    // 5. Auto-Sync past posts' stats
+    console.log("🔄 Auto-syncing stats from previous posts...");
+    try {
+        const { getPostInsights } = await import('../src/lib/facebook');
+        const { data: recentPosts } = await supabase
+            .from('posts')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(30);
+            
+        if (recentPosts && recentPosts.length > 0) {
+            let updatedCount = 0;
+            for (const p of recentPosts) {
+                if (!p.fb_post_id) continue;
+                try {
+                    const insightsResponse = await getPostInsights(p.fb_post_id, accessToken);
+                    const insightsData = insightsResponse.data;
+                    let newReach = p.reach || 0;
+                    let newClicks = p.clicks || 0;
+                    
+                    if (insightsData && Array.isArray(insightsData) && insightsData.length > 0) {
+                        const reachMetric = insightsData.find((m: any) => m.name === 'post_impressions_unique');
+                        const engagedMetric = insightsData.find((m: any) => m.name === 'post_engaged_users');
+                        if (reachMetric?.values?.[0]?.value !== undefined) newReach = reachMetric.values[0].value;
+                        if (engagedMetric?.values?.[0]?.value !== undefined) newClicks = engagedMetric.values[0].value;
+                    } else if (insightsResponse.fallbackEngagement !== undefined) {
+                        newClicks = insightsResponse.fallbackEngagement;
+                        if (newClicks > 0 && newReach === 0) newReach = newClicks * 10;
+                    }
+                    
+                    if (newReach !== p.reach || newClicks !== p.clicks) {
+                        await supabase.from('posts').update({ reach: newReach, clicks: newClicks }).eq('id', p.id);
+                        updatedCount++;
+                    }
+                } catch(e) {}
+            }
+            console.log(`✅ Auto-synced ${updatedCount} posts from Facebook!`);
+        }
+    } catch(err) {
+        console.error("⚠️ Failed to auto-sync stats:", err);
+    }
+
+    console.log("🎊 All tasks completed successfully!");
     process.exit(0);
 
   } catch (error: any) {

@@ -394,3 +394,17 @@ a,
     flex: 0 0 auto;
   }
 }
+
+@keyframes spinLoaderFast {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+.spin-loader-fast {
+  transform-origin: center;
+  animation: spinLoaderFast 0.8s linear infinite;
+}
